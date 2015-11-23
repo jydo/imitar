@@ -2,19 +2,22 @@
 from logging import StreamHandler
 from logging import getLogger
 import sys
-from .base_emulator import BaseEmulator
-
+from imitar.base_emulator import BaseEmulator
+from imitar.message_parser import CharacterMessageParser
 
 __version__ = '1.0.0'
 _logger = getLogger('extron_emulator')
 _logger.addHandler(StreamHandler(stream=sys.stdout))
+DELIMITER = '\r\n'
+ENCODING = 'ascii'
 
 
 class ExtronMps601Emulator(BaseEmulator):
     logger = _logger
+    message_parser = CharacterMessageParser(DELIMITER, ENCODING)
 
     def __init__(self, port, debug=False):
-        super().__init__(port, debug=debug)
+        super().__init__(port, self.message_parser, 'ascii', '\r\n', debug=debug)
         self.connection_state = [1, 1, 1, 1, 1, 1, 1]
         self.active_input = 1
         self.auto_switch_mode = 0

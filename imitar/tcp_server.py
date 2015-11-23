@@ -16,10 +16,12 @@ class ClientDisconnectedError(Exception):
 
 
 class ClientWorker:
-    def __init__(self, client_queue, broadcast_queue, handle_message, delimiter, encoding=None, welcome_message=None):
+    def __init__(self, client_queue, broadcast_queue, handle_message, message_parser, encoding=None, delimiter=None,
+                 welcome_message=None):
         self.client_queue = client_queue
         self.broadcast_queue = broadcast_queue
         self.handle_message = handle_message
+        self.message_parser = message_parser
         self.delimiter = delimiter
         self.encoding = encoding
         self.welcome_message = welcome_message
@@ -58,20 +60,8 @@ class ClientWorker:
 
         self.buffer.extend(incoming)
         logger.debug('buffer: {}'.format(self.buffer))
-        messages = self.buffer.split(self.delimiter)
-
-        # If the last character received was a delimiter then the last message is an empty bytearray, otherwise it's an
-        # incomplete message, either way we don't want it in the messages array.
-        self.buffer = messages.pop(-1)
-
-        if self.encoding:
-            decoded_messages = []
-
-            for message in messages:
-                if message != b'':
-                    decoded_messages.append(message.decode(self.encoding))
-
-            messages = decoded_messages
+        print(self.message_parser)
+        messages, self.buffer = self.message_parser.process_buffer(self.buffer)
 
         for message in messages:
             if message != b'':
@@ -91,10 +81,11 @@ class ClientWorker:
 
     def send_message(self, message):
         if self.client is not None:
+            if self.delimiter:
+                message = message + self.delimiter
+
             if self.encoding:
                 message = message.encode(self.encoding)
-
-            message = message + self.delimiter
 
             self.client.sendall(message)
 
@@ -109,7 +100,7 @@ class ClientWorker:
                     self.client, self.address = self.client_queue.get(timeout=0.5)
 
                     if self.welcome_message is not None:
-                        self.client.sendall(self.welcome_message + self.delimiter)
+                        self.client.sendall(self.welcome_message + self.delimiter.encode(self.encoding))
                 except Empty:
                     continue
 
@@ -150,9 +141,11 @@ class TcpServer:
     TODO: Find a way to prompt for login/password per client. This means we'll need some sort of session object that
           will probably have to be passed to the handle_messages callback.
     """
-    def __init__(self, port, handle_message, encoding='ascii', delimiter='\r\n', welcome_message=None, debug=False):
+    def __init__(self, port, handle_message, message_parser, encoding='ascii', delimiter='\r\n', welcome_message=None,
+                 debug=False):
         self.port = port
         self.handle_message = handle_message
+        self.message_parser = message_parser
         self.encoding = encoding
         self.delimiter = delimiter
         self.welcome_message = welcome_message
@@ -166,8 +159,6 @@ class TcpServer:
         self._shutting_down = False
 
         if self.encoding:
-            self.delimiter = self.delimiter.encode(self.encoding)
-
             if welcome_message is not None:
                 self.welcome_message = self.welcome_message.encode(self.encoding)
 
@@ -184,8 +175,8 @@ class TcpServer:
 
     def create_workers(self):
         for i in range(0, 4):
-            worker = ClientWorker(self.client_queue, self.broadcast_queue, self.handle_message, self.delimiter,
-                                  self.encoding, self.welcome_message)
+            worker = ClientWorker(self.client_queue, self.broadcast_queue, self.handle_message, self.message_parser,
+                                  self.encoding, self.delimiter, self.welcome_message)
             self.client_workers.append(worker)
 
     def broadcast_message(self, message, from_worker=None):

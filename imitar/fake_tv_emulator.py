@@ -2,23 +2,27 @@
 from logging import getLogger, StreamHandler
 import sys
 from imitar.base_emulator import BaseEmulator
-from .utils import run_later
+from imitar.message_parser import CharacterMessageParser
+from imitar.utils import run_later
 
 __version__ = '1.0.0'
 _logger = getLogger('fake_tv_server')
 _logger.addHandler(StreamHandler(stream=sys.stdout))
+DELIMITER = '\r\n'
+ENCODING = 'ascii'
 
 
 class FakeTvEmulator(BaseEmulator):
     """
     This class implements a protocol that acts like a networked TV. This is a network service that communicates over
-    TCP. This class is used to test our Transport layer without having to talk to a real device.
+    TCP.
     """
     welcome_message = 'FakeTvServer v{}'.format(__version__)
     logger = _logger
+    message_parser = CharacterMessageParser(DELIMITER, ENCODING)
 
     def __init__(self, port, debug=False):
-        super().__init__(port, debug=debug)
+        super().__init__(port, self.message_parser, debug=debug)
         self.power = '0'
         self.volume = 0
         self.mute = '0'

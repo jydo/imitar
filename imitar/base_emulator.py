@@ -14,10 +14,11 @@ class BaseEmulator(metaclass=ABCMeta):
     welcome_message = None
     logger = _logger
 
-    def __init__(self, port, encoding='ascii', delimiter='\r\n', debug=False):
+    def __init__(self, port, message_parser, encoding='ascii', delimiter='\r\n', debug=False):
         self.port = port
         self.debug = debug
-        self.transport = TcpServer(self.port, self.handle_message, encoding, delimiter, self.welcome_message, debug)
+        self.transport = TcpServer(self.port, self.handle_message, message_parser, encoding, delimiter,
+                                   self.welcome_message, debug)
         self._init_shutdown()
 
         if debug:
