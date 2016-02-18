@@ -10,7 +10,7 @@ _logger = getLogger('device_server')
 _logger.addHandler(StreamHandler(stream=sys.stdout))
 
 
-class BaseEmulator(metaclass=ABCMeta):
+class Emulator(metaclass=ABCMeta):
     welcome_message = None
     logger = _logger
 

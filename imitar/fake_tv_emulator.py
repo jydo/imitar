@@ -3,7 +3,7 @@ import sys
 from logging import getLogger, StreamHandler
 from threading import Thread
 
-from imitar.base_emulator import BaseEmulator
+from imitar.emulator import Emulator
 from imitar.message_parser import CharacterMessageParser
 
 __version__ = '1.0.0'
@@ -21,7 +21,7 @@ def run_later(fn, seconds):
     Thread(target=later, daemon=True).start()
 
 
-class FakeTvEmulator(BaseEmulator):
+class FakeTvEmulator(Emulator):
     """
     This class implements a protocol that acts like a networked TV. This is a network service that communicates over
     TCP.

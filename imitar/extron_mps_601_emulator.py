@@ -3,7 +3,7 @@ import sys
 from logging import StreamHandler
 from logging import getLogger
 
-from imitar.base_emulator import BaseEmulator
+from imitar.emulator import Emulator
 from imitar.message_parser import CharacterMessageParser
 
 __version__ = '1.0.0'
@@ -13,7 +13,7 @@ DELIMITER = '\r\n'
 ENCODING = 'ascii'
 
 
-class ExtronMps601Emulator(BaseEmulator):
+class ExtronMps601Emulator(Emulator):
     logger = _logger
     message_parser = CharacterMessageParser(DELIMITER, ENCODING)
 
