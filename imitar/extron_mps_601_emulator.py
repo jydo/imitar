@@ -125,29 +125,27 @@ if __name__ == '__main__':
         user_input = input('Enter Command:')
         options = user_input.split(' ')
 
-        if options[0] == 'c':
+        if options[0] == 'c' and (len(options) != 3 or options[1] == '?'):
+            print('The command must be in the format of "c [input or output] [connected status]"')
+            print('0-5 are input ports, 6 is the output port')
+            print('The connected status may be 0 for disconnected or 1 for connected')
+            print('Example: "c 1 0" will set the 2nd port to the disconnected status.')
+        elif options[0] == 'c':
             # Enable or disable the input or output selected.
-            if len(options) != 3 or options[1] == '?':
-                print('The command must be in the format of "c [input or output] [connected status]"')
-                print('0-5 are input ports, 6 is the output port')
-                print('The connected status may be 0 for disconnected or 1 for connected')
-                print('Example: "c 1 0" will set the 2nd port to the disconnected status.')
-                continue
-
             io = int(options[1])
             status = bool(int(options[2]))
             em.set_connection_status(io, status)
+        elif options[0] == 's' and (len(options) != 2 or options[1] == '?'):
+            print('The command must be in the format of "s [input number]"')
+            print('0-5 are valid input numbers.')
+            print('Example: "s 1" will switch the 2nd input to the output port')
         elif options[0] == 's':
-            if len(options) != 2 or options[1] == '?':
-                print('The command must be in the format of "s [input number]"')
-                print('0-5 are valid input numbers.')
-                print('Example: "s 1" will switch the 2nd input to the output port')
-                continue
-
             inpt = int(options[1])
 
             if inpt < 1 or inpt > 6:
                 print('The switch command only accepts values 1-6')
-                continue
-
-            em.set_input(inpt)
+            else:
+                em.set_input(inpt)
+                print('Input {} is now active'.format(em.active_input))
+        else:
+            print('Unknown command "{}"'.format(options[0]))
