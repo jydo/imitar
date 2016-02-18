@@ -17,7 +17,7 @@ class ExtronMps601Emulator(BaseEmulator):
     message_parser = CharacterMessageParser(DELIMITER, ENCODING)
 
     def __init__(self, port, debug=False):
-        super().__init__(port, self.message_parser, 'ascii', '\r\n', debug=debug)
+        super().__init__(port, self.message_parser, debug=debug)
         self.connection_state = [1, 1, 1, 1, 1, 1, 1]
         self.active_input = 1
         self.auto_switch_mode = 0
