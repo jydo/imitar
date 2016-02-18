@@ -19,7 +19,7 @@ class BaseEmulator(metaclass=ABCMeta):
         self.debug = debug
         self.transport = TcpServer(self.port, self.handle_message, message_parser, encoding, delimiter,
                                    self.welcome_message, debug)
-        self._init_shutdown()
+        self._setup_signal_handlers()
 
         if debug:
             self.logger.setLevel(DEBUG)
@@ -33,7 +33,7 @@ class BaseEmulator(metaclass=ABCMeta):
         self.transport.shutdown()
         sys.exit(0)
 
-    def _init_shutdown(self):
+    def _setup_signal_handlers(self):
         signal.signal(signal.SIGINT, self.shutdown)
         signal.signal(signal.SIGTERM, self.shutdown)
 
