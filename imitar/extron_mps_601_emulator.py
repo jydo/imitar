@@ -1,7 +1,8 @@
 # Copyright 2015 jydo inc. All rights reserved.
+import sys
 from logging import StreamHandler
 from logging import getLogger
-import sys
+
 from imitar.base_emulator import BaseEmulator
 from imitar.message_parser import CharacterMessageParser
 

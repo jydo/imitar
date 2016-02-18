@@ -1,11 +1,10 @@
 # Copyright 2015 jydo inc. All rights reserved.
+import errno
+import socket
+import sys
+import threading
 from logging import getLogger, StreamHandler, DEBUG, INFO
 from queue import Queue, Empty
-import socket
-import threading
-import sys
-import errno
-
 
 logger = getLogger('tcp_server')
 logger.addHandler(StreamHandler(stream=sys.stdout))

@@ -1,10 +1,10 @@
 # Copyright 2015 jydo inc. All rights reserved.
+import signal
+import sys
 from abc import ABCMeta, abstractmethod
 from logging import getLogger, StreamHandler, DEBUG, INFO
-import sys
-import signal
-from .tcp_server import TcpServer
 
+from .tcp_server import TcpServer
 
 _logger = getLogger('device_server')
 _logger.addHandler(StreamHandler(stream=sys.stdout))

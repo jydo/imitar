@@ -1,6 +1,5 @@
 # Copyright 2015 jydo inc. All rights reserved.
-from abc import abstractmethod
-from abc import ABCMeta
+from abc import ABCMeta, abstractmethod
 
 
 class MessageParser(metaclass=ABCMeta):

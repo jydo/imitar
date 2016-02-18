@@ -1,6 +1,6 @@
 # Copyright 2015 jydo inc. All rights reserved.
-from logging import getLogger, StreamHandler
 import sys
+from logging import getLogger, StreamHandler
 from threading import Thread
 
 from imitar.base_emulator import BaseEmulator
