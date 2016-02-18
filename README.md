@@ -24,6 +24,6 @@ If you'd like to contribute a new emulator, or improve the framework simply fork
 
 ## License
 
-Copyright © 2015 Jydo inc.
+Copyright © 2016 Jydo inc.
 
 Released under The Apache 2 license, see the `LICENSE` file for details
