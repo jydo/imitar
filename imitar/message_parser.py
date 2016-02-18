@@ -19,6 +19,9 @@ class CharacterMessageParser(MessageParser):
     def __init__(self, delimiter, encoding=None):
         """
         Chunks buffers based on a character delimiter.
+
+        :param delimiter: The delimiter used to determine the end of a message
+        :param encoding: The encoding of the incoming stream. Optional, defaults to None.
         """
         if isinstance(delimiter, (bytes, bytearray)):
             self.delimiter = delimiter
@@ -48,7 +51,8 @@ class CharacterMessageParser(MessageParser):
 class VariableLengthMessageParser(MessageParser):
     def __init__(self, header, length_index=1, footer_length=0):
         """
-        Parses a stream that contains length delimited messages. Note this parser assumes the length
+        Parses a stream that contains length delimited messages. Note: this parser assumes the length will be told to us
+        via a byte at a known offset.
 
         :param header: The byte or bytes that indicate the beginning of a message
         :param length_index: The index of the length byte relative to the header, typically, but not always, the first
@@ -100,6 +104,12 @@ class VariableLengthMessageParser(MessageParser):
 
 class FixedLengthMessageParser(MessageParser):
     def __init__(self, header, length):
+        """
+        Parses a stream assuming messages are of a fixed length.
+
+        :param header: The byte or bytes used to determine the 0th position
+        :param length: The length of each message
+        """
         self.header = header
         self.length = length
 
