@@ -23,53 +23,44 @@ class ExtronMps601Emulator(BaseEmulator):
         self.auto_switch_mode = 0
 
     def handle_input(self, message):
-        broadcast = True
+        broadcast = False
 
-        if message[0].isnumeric():
-            if self.auto_switch_mode == 0:
-                active_input = int(message[0])
-                self.active_input = active_input
-                resp = 'In{} All'.format(active_input)
-            else:
-                resp = 'E06'
-                broadcast = False
+        if message[0].isnumeric() and self.auto_switch_mode == 0:
+            active_input = int(message[0])
+            self.active_input = active_input
+            resp = 'In{} All'.format(active_input)
+            broadcast = True
+        elif message[0].isnumeric():
+            # Return an error if auto-switch is enabled and the user tries to switch the input.
+            resp = 'E06'
         else:
-            broadcast = False
             resp = str(self.active_input)
 
         return resp, broadcast
 
     def handle_auto_switch(self, message):
-        broadcast = True
-
         if message[1] == 'A':
-            broadcast = False
-            resp = str(self.auto_switch_mode)
-        else:
-            setting = int(message[1])
+            return str(self.auto_switch_mode), False
 
-            if 0 < setting < 3:
-                self.auto_switch_mode = setting
-                resp = 'Ausw{}'.format(setting)
-            else:
-                resp = 'E13'
-                broadcast = False
+        setting = int(message[1])
+
+        if 0 < setting < 3:
+            self.auto_switch_mode = setting
+            resp = 'Ausw{}'.format(setting)
+            broadcast = True
+        else:
+            resp = 'E13'
+            broadcast = False
 
         return resp, broadcast
 
-    def handle_input_status(self, message):
+    def handle_input_status(self):
         return '{} {} {} {} {} {}*{}'.format(*self.connection_state), False
 
     def handle_verbose_mode(self, message):
-        """
-        Note: we accept and respond to this command because our driver checks for it on initial_connection, however
-        since we cannot handle individual sessions at this moment we act like the device is always in verbose mode. I am
-        of course assuming here that verbose mode is a per-connection thing, I may be incorrect about that.
-        """
         if message[1].isnumeric():
-            # TODO: should we broadcast this?
-            # TODO: once we figure out how exactly this works (per-connection or for all connections) actually store
-            # the state.
+            # TODO: This is the correct response, but the manual isn't clear on what verbose mode means. The only device
+            # that I briefly had access to was in verbose mode, so this emulator essentially always assumes verbose mode
             return 'Vrb{}'.format(message[1]), True
         else:
             # TODO: when we store verbose mode state return it here.
@@ -83,7 +74,7 @@ class ExtronMps601Emulator(BaseEmulator):
         elif '!' in message:
             resp = self.handle_input(message)
         elif '0LS' in message:
-            resp = self.handle_input_status(message)
+            resp = self.handle_input_status()
         elif 'CV' in message:
             resp = self.handle_verbose_mode(message)
         else:
@@ -103,15 +94,14 @@ class ExtronMps601Emulator(BaseEmulator):
     def set_connection_status(self, num: int, status: bool):
         """
         Alters the connection status of an input or the output and braodcasts the message to all connected clients.
-        :param num: 0-6, if it is 0-5 it is input 1-6, if it is 6 it is the output
+        :param num: 0-6, if it is 0-5 it is input 1-6, 6 is the output
         :param status: True to set as connected, False to set as disconnected
         :return: None
         """
         self.logger.debug('Set Connection Status: {}, {}'.format(num, int(status)))
         self.connection_state[num] = int(status)
-        # TODO: Determine if connection status actually gets broadcast
-        # TODO: If it it does broadcast determine if this is the appropriate format to broadcast in
-        message = 'Sig {} {} {} {} {} {}*{}'.format(*self.connection_state)
+        input_status, _ = self.handle_input_status()
+        message = 'Sig ' + input_status
         self.logger.debug(message)
         self.transport.broadcast_message(message)
 
@@ -124,10 +114,10 @@ if __name__ == '__main__':
     import argparse
 
     parser = argparse.ArgumentParser(description='Start a TCP server.')
-    parser.add_argument('port', help='The port to bind the TCP service to.')
+    parser.add_argument('port', type=int, help='The port to bind the TCP service to.')
     parser.add_argument('--debug', action='store_true', default=False, help='Enables debug')
     args = parser.parse_args()
-    em = ExtronMps601Emulator(int(args.port), debug=args.debug)
+    em = ExtronMps601Emulator(args.port, debug=args.debug)
     em.start()
 
     while True:
