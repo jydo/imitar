@@ -165,4 +165,4 @@ if __name__ == '__main__':
         while True:
             time.sleep(1)
     except (Exception, KeyboardInterrupt):
-        tv.shutdown()
+        tv.shutdown(None, None)
