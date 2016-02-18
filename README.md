@@ -10,10 +10,6 @@ Imitar was written to emulate device protocols, which means that it is fully com
 
 Imitar comes bundled with a few emulators out of the box, but also includes the framework to easily create new ones. Contributions are welcome and encouraged.
 
-## Usage
-
-`TODO`
-
 ## Versioning
 
 Imitar uses semantic versioning, all releases will follow a `Major.Minor.Patch` versioning scheme. In short:
