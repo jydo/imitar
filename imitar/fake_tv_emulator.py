@@ -52,23 +52,26 @@ class FakeTvEmulator(BaseEmulator):
     def handle_power(self, value):
         broadcast = False
 
-        if value != '?':
+        if value not in ['?', '0', '1']:
+            return 'ERR', broadcast
+
+        if value == '0' or value == '1':
             broadcast = True
+            last_value = self.power
+            self.power = value
 
-            if value == '0' or value == '1':
-                last_value = self.power
-                self.power = value
+            if last_value == '1' and value == '0':
+                # If the device changes from power on to power off, then we want to wait three seconds to emulate power
+                # off and then broadcast to all clients that the TV is powered on. Then close all connected clients via
+                # power_off_callback
+                msg = 'POWR 0'
+                time.sleep(3)
+                self.powering_off = True
+                self.logger.debug('Broadcasting {}'.format(msg))
+                self.transport.broadcast_message(msg)
+                run_later(self.power_off_callback, 3)
 
-                if last_value == '0' and value == '1':
-                    msg = 'POWR 1'
-                    time.sleep(3)
-                    self.powering_off = True
-                    self.logger.debug('Broadcasting {}'.format(msg))
-                    self.transport.broadcast_message(msg)
-                    run_later(self.power_off_callback, 3)
-                    return None, False
-            else:
-                return 'ERR', False
+                return None, False
 
         return 'POWR {}'.format(self.power), broadcast
 
