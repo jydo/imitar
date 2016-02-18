@@ -55,7 +55,7 @@ class FakeTvEmulator(BaseEmulator):
         if value != '?':
             broadcast = True
 
-            if value == '0' or '1':
+            if value == '0' or value == '1':
                 last_value = self.power
                 self.power = value
 
@@ -151,15 +151,15 @@ if __name__ == '__main__':
     import argparse
     import time
 
-    # parser = argparse.ArgumentParser(description='Start a TCP server.')
-    # parser.add_argument('port', help='The port to bind the TCP service to.')
-    # parser.add_argument('--debug', action='store_true', default=False, help='Enables debug')
-    # args = parser.parse_args()
-    tv = FakeTvEmulator(5000, debug=True)
+    parser = argparse.ArgumentParser(description='Start a TCP server.')
+    parser.add_argument('port', type=int, help='The port to bind the TCP service to.')
+    parser.add_argument('--debug', action='store_true', default=False, help='Enables debug')
+    args = parser.parse_args()
+    tv = FakeTvEmulator(args.port, debug=args.debug)
     tv.start()
 
     try:
         while True:
             time.sleep(1)
-    except Exception:
-        tv.stop()
+    except (Exception, KeyboardInterrupt):
+        tv.shutdown()
