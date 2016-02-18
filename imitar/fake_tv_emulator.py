@@ -1,15 +1,24 @@
 # Copyright 2015 jydo inc. All rights reserved.
 from logging import getLogger, StreamHandler
 import sys
+from threading import Thread
+
 from imitar.base_emulator import BaseEmulator
 from imitar.message_parser import CharacterMessageParser
-from imitar.utils import run_later
 
 __version__ = '1.0.0'
 _logger = getLogger('fake_tv_server')
 _logger.addHandler(StreamHandler(stream=sys.stdout))
 DELIMITER = '\r\n'
 ENCODING = 'ascii'
+
+
+def run_later(fn, seconds):
+    def later():
+        time.sleep(seconds)
+        fn()
+
+    Thread(target=later, daemon=True).start()
 
 
 class FakeTvEmulator(BaseEmulator):
@@ -142,12 +151,15 @@ if __name__ == '__main__':
     import argparse
     import time
 
-    parser = argparse.ArgumentParser(description='Start a TCP server.')
-    parser.add_argument('port', help='The port to bind the TCP service to.')
-    parser.add_argument('--debug', action='store_true', default=False, help='Enables debug')
-    args = parser.parse_args()
-    tv = FakeTvServer(int(args.port), debug=args.debug)
+    # parser = argparse.ArgumentParser(description='Start a TCP server.')
+    # parser.add_argument('port', help='The port to bind the TCP service to.')
+    # parser.add_argument('--debug', action='store_true', default=False, help='Enables debug')
+    # args = parser.parse_args()
+    tv = FakeTvEmulator(5000, debug=True)
     tv.start()
 
-    while True:
-        time.sleep(1)
+    try:
+        while True:
+            time.sleep(1)
+    except Exception:
+        tv.stop()
